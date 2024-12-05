@@ -73,24 +73,21 @@ func partOne(input *Input) int {
 }
 
 func partTwo(input *Input) int {
-	frequencyTable := map[int]int{}
+	lookup := map[int]struct{}{}
 	for _, val := range input.left {
-		frequencyTable[val] = 0
+		lookup[val] = struct{}{}
 	}
 
+	// 5 * 3 is the same as 5 + 5 + 5
+	similarity := 0
 	for _, val := range input.right {
-		_, exists := frequencyTable[val]
+		_, exists := lookup[val]
 		if exists {
-			frequencyTable[val]++
+			similarity += val
 		}
 	}
 
-	sum := 0
-	for _, val := range input.left {
-		sum += val * frequencyTable[val]
-	}
-
-	return sum
+	return similarity
 }
 
 func diff(left, right int) int {
