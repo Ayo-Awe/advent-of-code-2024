@@ -35,25 +35,13 @@ func partOne(input string) int {
 	r := regexp.MustCompile(`mul\(\d+,\d+\)`)
 	instructions := r.FindAllString(string(input), -1)
 
-	sum := 0
+	state := &State{sum: 0, mulEnabled: true}
 	for _, instruction := range instructions {
-		r := regexp.MustCompile(`\d+`)
-		operands := r.FindAllString(instruction, -1)
-
-		leftOperand, err := strconv.Atoi(operands[0])
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		rightOperand, err := strconv.Atoi(operands[1])
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		sum += leftOperand * rightOperand
+		_, args := splitInstruction(instruction)
+		mulHandler(args, state)
 	}
 
-	return sum
+	return state.sum
 }
 
 func partTwo(input string) int {
