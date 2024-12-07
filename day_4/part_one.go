@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 func partOne(input [][]string) int {
 	totalMatches := 0
 	for y, row := range input {
@@ -12,7 +10,6 @@ func partOne(input [][]string) int {
 		}
 	}
 
-	fmt.Println("solution to part one: ", totalMatches)
 	return totalMatches
 }
 

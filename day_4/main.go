@@ -21,4 +21,5 @@ func main() {
 	}
 
 	fmt.Println("solution to part one:", partOne(input))
+	fmt.Println("solution to part two:", partTwo(input))
 }
