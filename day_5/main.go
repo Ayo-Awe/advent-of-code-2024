@@ -23,11 +23,15 @@ func main() {
 
 	rules := input[:partitionfIndex]
 	pageUpdates := input[partitionfIndex+1:]
-
 	rulesLookup := constructRulesLookup(rules)
 
+	fmt.Println("solution to part one: ", PartOne(rulesLookup, pageUpdates))
+	fmt.Println("solution to part two: ", PartTwo(rulesLookup, pageUpdates))
+}
+
+func PartOne(rulesLookup map[string]struct{}, updates []string) int {
 	sumOfMids := 0
-	for _, update := range pageUpdates {
+	for _, update := range updates {
 		pages := strings.Split(update, ",")
 		if isValidPageOrder(pages, rulesLookup) {
 			mid := pages[len(pages)/2]
@@ -40,7 +44,26 @@ func main() {
 		}
 	}
 
-	fmt.Println("solution to part one: ", sumOfMids)
+	return sumOfMids
+}
+
+func PartTwo(rulesLookup map[string]struct{}, updates []string) int {
+	sumOfMids := 0
+	for _, update := range updates {
+		pages := strings.Split(update, ",")
+		if !isValidPageOrder(pages, rulesLookup) {
+			sortPages(pages, rulesLookup)
+			mid := pages[len(pages)/2]
+			midAsInt, err := strconv.Atoi(mid)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			sumOfMids += midAsInt
+		}
+	}
+
+	return sumOfMids
 }
 
 // converts an update to a list of rules that must exist for the update to be valid
@@ -78,4 +101,18 @@ func isValidPageOrder(pages []string, rulesLookup map[string]struct{}) bool {
 	return true
 }
 
-// func getMiddlePageAsInt
+// sorts pages in place using the order provided in the rules lookup
+func sortPages(pages []string, rulesLookup map[string]struct{}) {
+	// sort pages using rules order
+	slices.SortFunc(pages, func(a, b string) int {
+		// returns -1 if a should appear before b and 1 if otherwise
+
+		rule := a + "|" + b
+		_, exists := rulesLookup[rule]
+		if exists {
+			return -1
+		}
+
+		return 1
+	})
+}
