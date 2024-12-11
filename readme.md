@@ -7,6 +7,7 @@ This repository contains my solutions to the [Advent of Code 2024](https://adven
 ## Structure
 
 The repository is organized by days, with each day's solution in its own directory:
+```
 advent-of-code-2024/
 ├── day_1/
 ├── day_2/
@@ -16,6 +17,7 @@ advent-of-code-2024/
 ├── day_6/
 ├── day_7/
 └── aoc/ # Shared utilities
+```
 
 Each day's directory contains at least:
 - `main.go` - The main solution file
