@@ -38,6 +38,7 @@ func main() {
 	}
 
 	fmt.Println("solution to part one: ", PartOne(stones))
+	fmt.Println("solution to part two: ", PartTwo(stones))
 }
 
 func PartOne(stones []int) int {
@@ -48,6 +49,17 @@ func PartOne(stones []int) int {
 	}
 
 	return len(newStones)
+}
+
+func PartTwo(stones []int) int {
+	var totalCount int
+	memo := make(map[string]int)
+
+	for _, stone := range stones {
+		totalCount += count(stone, 75, memo)
+	}
+
+	return totalCount
 }
 
 func blink(stones []int) []int {
@@ -96,4 +108,28 @@ func nDigits(v int) int {
 	}
 
 	return n
+}
+
+func count(stone, steps int, memo map[string]int) int {
+	cachedCount, ok := memo[getMapKey(stone, steps)]
+	if ok {
+		return cachedCount
+	}
+
+	if steps == 0 {
+		return 1
+	}
+
+	var totalCount int
+	for _, s := range blink([]int{stone}) {
+		totalCount += count(s, steps-1, memo)
+	}
+
+	memo[getMapKey(stone, steps)] = totalCount
+
+	return totalCount
+}
+
+func getMapKey(stone, step int) string {
+	return fmt.Sprintf("%d-%d", stone, step)
 }
