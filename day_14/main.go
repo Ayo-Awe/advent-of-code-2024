@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"regexp"
 	"strconv"
 
@@ -65,12 +66,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("solution to part one: ", PartOne(robots))
+	fmt.Println("solution to part one: ", PartOne(100, robots))
+	fmt.Println("solution to part two: ", PartTwo(robots))
 }
 
-func PartOne(robots []robot) int {
+func PartOne(sec int, robots []robot) int {
 	dim := [2]int{101, 103}
-	sec := 100
 
 	quadrants := make(map[[2]int]int)
 	for _, r := range robots {
@@ -82,6 +83,11 @@ func PartOne(robots []robot) int {
 			continue
 		}
 
+		// quadX and quadY are 0 or 1 depending on what quadrant the robot is in
+		// 00 is top left
+		// 10 is top right
+		// 01 is bottom left
+		// 11 is bottom right
 		quadX, quadY := x/(midX+1), y/(midY+1)
 		quadrants[[2]int{quadX, quadY}]++
 	}
@@ -92,4 +98,21 @@ func PartOne(robots []robot) int {
 	}
 
 	return total
+}
+
+func PartTwo(robots []robot) int {
+	size := 101 * 103
+
+	minSafetyFactor := math.MaxInt
+	var minSec int
+
+	// the robots begin to repeat after w*h = 101*103 secs
+	for i := range size {
+		if safetyFactor := PartOne(i+1, robots); safetyFactor < minSafetyFactor {
+			minSafetyFactor = safetyFactor
+			minSec = i + 1
+		}
+	}
+
+	return minSec
 }
