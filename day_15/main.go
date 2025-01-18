@@ -96,65 +96,12 @@ func PartTwo(warehouse Warehouse) int {
 	for _, m := range warehouse.moves {
 		dir := directions[m]
 
-		// horizontal move
-		if dir[Y] == 0 {
-			// distance between the robot's position and
-			// the last consecutive box cell in direction dir
-			var dist int
-			curr := stepN(warehouse.robot, dir, 1)
-			for warehouse.grid[curr[Y]][curr[X]] == '[' || warehouse.grid[curr[Y]][curr[X]] == ']' {
-				dist++
-				curr = stepN(curr, dir, 1)
-			}
-
-			target := stepN(warehouse.robot, dir, dist+1)
-			if warehouse.grid[target[Y]][target[X]] == '#' {
-				continue
-			}
-
-			move(warehouse.robot, dir, warehouse.grid)
-			warehouse.robot = stepN(warehouse.robot, dir, 1)
-		} else {
-			var isBlocked bool
-			queue := [][2]int{stepN(warehouse.robot, dir, 1)}
-			seen := map[[2]int]struct{}{}
-
-			for len(queue) > 0 {
-				pos := queue[0]
-				queue = queue[1:]
-
-				if _, exists := seen[pos]; exists {
-					continue
-				}
-
-				cell := warehouse.grid[pos[Y]][pos[X]]
-				if cell == '[' {
-					// append matching bracket
-					queue = append(queue, [2]int{pos[X] + 1, pos[Y]})
-				} else if cell == ']' {
-					// append matching bracket
-					queue = append(queue, [2]int{pos[X] - 1, pos[Y]})
-				} else if cell == '#' {
-					isBlocked = true
-					break
-				} else {
-					continue
-				}
-
-				// add the cell in front of the current to the queue
-				queue = append(queue, stepN(pos, dir, 1))
-				seen[pos] = struct{}{}
-			}
-
-			// skip there's a wall in front of at least one of the boxes
-			if isBlocked {
-				continue
-			}
-
-			// move all boxes forward
-			move(warehouse.robot, dir, warehouse.grid)
-			warehouse.robot = stepN(warehouse.robot, dir, 1)
+		if !canMove(warehouse.robot, dir, warehouse.grid) {
+			continue
 		}
+
+		move(warehouse.robot, dir, warehouse.grid)
+		warehouse.robot = stepN(warehouse.robot, dir, 1)
 	}
 
 	return GPSCoordSum(warehouse.grid)
@@ -222,7 +169,7 @@ func move(cellPos, dir [2]int, grid [][]rune) {
 	move(target, dir, grid)
 	swap(cellPos, target, grid)
 
-	// if this is a veritical move, move the matching bracket too
+	// if this is a veritical move, move the entire box
 	if dir[Y] != 0 {
 		if cell == '[' {
 			move([2]int{cellPos[X] + 1, cellPos[Y]}, dir, grid)
@@ -243,4 +190,47 @@ func GPSCoordSum(grid [][]rune) int {
 	}
 
 	return sum
+}
+
+func canMove(robot [2]int, dir [2]int, grid [][]rune) bool {
+	// Horizontal direction
+	if dir[Y] == 0 {
+		curr := stepN(robot, dir, 1)
+		for grid[curr[Y]][curr[X]] == '[' || grid[curr[Y]][curr[X]] == ']' {
+			curr = stepN(curr, dir, 1)
+		}
+		return grid[curr[Y]][curr[X]] != '#'
+	}
+
+	// Vertical direction
+	queue := [][2]int{robot}
+	seen := map[[2]int]struct{}{}
+
+	for len(queue) > 0 {
+		pos := queue[0]
+		queue = queue[1:]
+
+		if _, exists := seen[pos]; exists {
+			continue
+		}
+
+		cell := grid[pos[Y]][pos[X]]
+		switch cell {
+		case '[':
+			queue = append(queue, [2]int{pos[X] + 1, pos[Y]})
+		case ']':
+			queue = append(queue, [2]int{pos[X] - 1, pos[Y]})
+		case '#':
+			return false
+		case '.':
+			continue
+		}
+
+		// add the cell in front of the current to the queue
+		// and mark as seen
+		queue = append(queue, stepN(pos, dir, 1))
+		seen[pos] = struct{}{}
+	}
+
+	return true
 }
