@@ -17,7 +17,7 @@ jobs:
         id: check_diff
         run: |
           if git diff --exit-code --quiet readme.md; then
-            echo "No changes in generated API client"
+            echo "No changes in readme"
             echo "readme_changed=false" >> $GITHUB_ENV
           else
             echo "readme changed"

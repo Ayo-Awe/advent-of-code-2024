@@ -22,6 +22,6 @@ done
 new_readme_content="$before_progress\n$new_progress"
 
 # Write the updated content back to the README file
-echo -e "$new_readme_content" > README.md
+echo -e "$new_readme_content" > readme.md
 
 echo "README updated with the latest progress."
