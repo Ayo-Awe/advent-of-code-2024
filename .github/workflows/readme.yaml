@@ -1,0 +1,33 @@
+name: Update AOC progress in readme
+on: push
+
+jobs:
+  update_readme:
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update readme file
+        run: ./update_readme.sh
+
+      - name: Check if readme changed
+        id: check_diff
+        run: |
+          if git diff --exit-code --quiet readme.md; then
+            echo "No changes in generated API client"
+            echo "readme_changed=false" >> $GITHUB_ENV
+          else
+            echo "readme changed"
+            echo "readme_changed=true" >> $GITHUB_ENV
+          fi
+      - name: Commit updates
+        if: env.readme_changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add readme.md
+          git commit -m "docs: update progress in readme"
+          git push origin HEAD:${{ github.ref }}
