@@ -4,7 +4,7 @@
 progress=$(find . -name "day_*" | cut -d _ -f 2 | sort -n)
 
 # Read the current README content
-readme_content=$(cat README.md)
+readme_content=$(cat readme.md)
 
 # Find the start and end of the Progress section
 progress_start=$(echo "$readme_content" | grep -n "## Progress" | cut -d: -f1)
