@@ -4,10 +4,16 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/ayo-awe/advent-of-code-2024/aoc"
+)
+
+var (
+	rRegisters = regexp.MustCompile(`[A,B,C]:\s\d+`)
+	rProgram   = regexp.MustCompile(`Program: (\d+(?:,\d+)*)`)
 )
 
 type Computer struct {
@@ -16,53 +22,35 @@ type Computer struct {
 	Out     []int
 }
 
-func parseInput(input []string) (Computer, []int, error) {
-	if len(input) != 5 {
-		return Computer{}, nil, fmt.Errorf("invalid input: expected 5 lines but got %d", len(input))
-	}
-
+func parseInput(input string) (Computer, []int, error) {
 	var comp Computer
-	var program []int
+	var registers, program []int
 
-	for i, line := range input {
-		switch i {
-		case 0:
-			A, err := strconv.Atoi(strings.Split(line, ": ")[1])
-			if err != nil {
-				return Computer{}, nil, err
-			}
-			comp.A = A
-
-		case 1:
-			B, err := strconv.Atoi(strings.Split(line, ": ")[1])
-			if err != nil {
-				return Computer{}, nil, err
-			}
-			comp.B = B
-
-		case 2:
-			C, err := strconv.Atoi(strings.Split(line, ": ")[1])
-			if err != nil {
-				return Computer{}, nil, err
-			}
-			comp.C = C
-		case 4:
-			programStr := strings.Split(line, ": ")[1]
-			for _, instr := range strings.Split(programStr, ",") {
-				a, err := strconv.Atoi(instr)
-				if err != nil {
-					return Computer{}, nil, err
-				}
-				program = append(program, a)
-			}
+	for _, r := range rRegisters.FindAllString(input, -1) {
+		rInt, err := strconv.Atoi(strings.Split(r, " ")[1])
+		if err != nil {
+			return Computer{}, nil, err
 		}
+		registers = append(registers, rInt)
 	}
+
+	for _, v := range strings.Split(rProgram.FindStringSubmatch(input)[1], ",") {
+		vInt, err := strconv.Atoi(v)
+		if err != nil {
+			return Computer{}, nil, err
+		}
+		program = append(program, vInt)
+	}
+
+	comp.A = registers[0]
+	comp.B = registers[1]
+	comp.C = registers[2]
 
 	return comp, program, nil
 }
 
 func main() {
-	input, err := aoc.ReadInputLineByLine("input.txt")
+	input, err := aoc.ReadInput("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
