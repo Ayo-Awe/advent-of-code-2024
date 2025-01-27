@@ -59,98 +59,36 @@ func PartOne(bytePositions [][2]int) int {
 	corrupted := make(map[[2]int]struct{})
 	n := 1 << 10 // 1024
 	gridSize := 71
-	end := [2]int{gridSize - 1, gridSize - 1}
 
 	for i := range n {
 		bytePos := bytePositions[i]
 		corrupted[bytePos] = struct{}{}
 	}
 
-	seen := make(map[[2]int]struct{})
-	queue := [][3]int{{}}
-
-	var minSteps int
-	for len(queue) > 0 {
-		curr := queue[0]
-		pos := [2]int{curr[X], curr[Y]}
-		queue = queue[1:]
-
-		if _, ok := seen[pos]; ok {
-			continue
-		}
-
-		if _, ok := corrupted[pos]; ok {
-			continue
-		}
-
-		if pos[X] < 0 || pos[X] >= gridSize || pos[Y] < 0 || pos[Y] >= gridSize {
-			continue
-		}
-
-		if pos == end {
-			minSteps = curr[Steps]
-			break
-		}
-
-		for _, dir := range directions {
-			queue = append(queue, [3]int{curr[X] + dir[X], curr[Y] + dir[Y], curr[Steps] + 1})
-		}
-
-		seen[pos] = struct{}{}
-	}
-
-	return minSteps
+	return solve(gridSize, corrupted)
 }
 
 func PartTwo(bytePositions [][2]int) string {
 	corrupted := make(map[[2]int]struct{})
 	n := 1 << 10 // 1024
 	gridSize := 71
-	end := [2]int{gridSize - 1, gridSize - 1}
 
 	for i := range n {
 		bytePos := bytePositions[i]
 		corrupted[bytePos] = struct{}{}
 	}
 
+	// incrementally add the remaining bytes until we find the
+	// first run without a solution
 	var blockingByte [2]int
 	for ; n < len(bytePositions); n++ {
-		seen := make(map[[2]int]struct{})
-		queue := [][3]int{{}}
 		bytePos := bytePositions[n]
 		corrupted[bytePos] = struct{}{}
 
-		var minSteps int
-		for len(queue) > 0 {
-			curr := queue[0]
-			pos := [2]int{curr[X], curr[Y]}
-			queue = queue[1:]
+		minSteps := solve(gridSize, corrupted)
 
-			if _, ok := seen[pos]; ok {
-				continue
-			}
-
-			if _, ok := corrupted[pos]; ok {
-				continue
-			}
-
-			if pos[X] < 0 || pos[X] >= gridSize || pos[Y] < 0 || pos[Y] >= gridSize {
-				continue
-			}
-
-			if pos == end {
-				minSteps = curr[Steps]
-				break
-			}
-
-			for _, dir := range directions {
-				queue = append(queue, [3]int{curr[X] + dir[X], curr[Y] + dir[Y], curr[Steps] + 1})
-			}
-
-			seen[pos] = struct{}{}
-		}
-
-		// we never reached the end square
+		// the first square to block the path occurs on the first run where there's
+		// no solution i.e minSteps == 0
 		if minSteps == 0 {
 			blockingByte = bytePos
 			break
@@ -158,4 +96,44 @@ func PartTwo(bytePositions [][2]int) string {
 	}
 
 	return fmt.Sprintf("%d,%d", blockingByte[X], blockingByte[Y])
+}
+
+func solve(gridSize int, corrupted map[[2]int]struct{}) int {
+	seen := make(map[[2]int]struct{})
+	endPos := [2]int{gridSize - 1, gridSize - 1}
+
+	startNode := [3]int{}
+	queue := [][3]int{startNode}
+
+	var minSteps int
+	for len(queue) > 0 {
+		currNode := queue[0]
+		curPos := [2]int{currNode[X], currNode[Y]}
+		queue = queue[1:]
+
+		if _, ok := seen[curPos]; ok {
+			continue
+		}
+
+		if _, ok := corrupted[curPos]; ok {
+			continue
+		}
+
+		if curPos[X] < 0 || curPos[X] >= gridSize || curPos[Y] < 0 || curPos[Y] >= gridSize {
+			continue
+		}
+
+		if curPos == endPos {
+			minSteps = currNode[Steps]
+			break
+		}
+
+		for _, dir := range directions {
+			queue = append(queue, [3]int{currNode[X] + dir[X], currNode[Y] + dir[Y], currNode[Steps] + 1})
+		}
+
+		seen[curPos] = struct{}{}
+	}
+
+	return minSteps
 }
