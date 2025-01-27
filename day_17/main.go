@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -20,6 +20,17 @@ type Computer struct {
 	IP      int
 	A, B, C int
 	Out     []int
+}
+
+func (c *Computer) String() string {
+	return fmt.Sprintf("Register A: %b\nRegister B: %b\nRegister C: %b", c.A, c.B, c.C)
+}
+
+func (c *Computer) Run(program []int) {
+	for c.IP >= 0 && c.IP < len(program) {
+		opcode, operand := program[c.IP], program[c.IP+1]
+		exec(opcode, operand, c)
+	}
 }
 
 func parseInput(input string) (Computer, []int, error) {
@@ -61,21 +72,55 @@ func main() {
 	}
 
 	fmt.Println("solution to part one: ", PartOne(computer, program))
+	fmt.Println("solution to part two: ", PartTwo(computer, program))
 }
 
-func PartOne(computer Computer, program []int) string {
-	curr := computer
-	for curr.IP >= 0 && curr.IP < len(program) {
-		opcode, operand := program[curr.IP], program[curr.IP+1]
-		exec(opcode, operand, &curr)
-	}
+func PartOne(comp Computer, program []int) string {
+	comp.Run(program)
 
 	var res []string
-	for _, out := range curr.Out {
+	for _, out := range comp.Out {
 		res = append(res, strconv.Itoa(out))
 	}
 
 	return strings.Join(res, ",")
+}
+
+func PartTwo(computer Computer, program []int) int {
+	// Note: you'll need to walkthrough your program to know how many bits each segment should
+	// be.
+
+	// we reverse engineer the segments of the A register 3-bits at a time,
+	// the first 3 bits of the A register are responsible for producing
+	// the last output — in my case, 0. Then we expand by an extra 3 bits, searching through
+	// values 0 (0b000) to 7 (0b111), noting values that produce the last 2 outputs and so on...
+
+	// from hacking around, 0b111 or 7 is known to produce the last output 0
+	// at least, based on my given input
+	knownSegments := []int{0b111}
+
+	// we try to find the remaining segments of the output, we skip the last output 0, since
+	// we already know that
+	for i := 2; i <= len(program); i++ {
+		var expandedSegments []int
+		expectedOutput := program[len(program)-i:]
+
+		for _, f := range knownSegments {
+			for i := 0b000; i <= 0b111; i++ {
+				regA := f<<3 + i
+				comp := Computer{A: regA}
+				comp.Run(program)
+
+				if slices.Equal(comp.Out, expectedOutput) {
+					expandedSegments = append(expandedSegments, regA)
+				}
+			}
+		}
+
+		knownSegments = expandedSegments
+	}
+
+	return slices.Min(knownSegments)
 }
 
 func combo(operand int, computer *Computer) int {
@@ -98,7 +143,7 @@ func exec(opCode, operand int, computer *Computer) {
 	case 0:
 		numerator := computer.A
 		comboOp := combo(operand, computer)
-		computer.A = numerator / int(math.Pow(2, float64(comboOp)))
+		computer.A = numerator / (1 << comboOp)
 	case 1:
 		computer.B = computer.B ^ operand
 	case 2:
@@ -116,11 +161,11 @@ func exec(opCode, operand int, computer *Computer) {
 	case 6:
 		numerator := computer.A
 		comboOp := combo(operand, computer)
-		computer.B = numerator / int(math.Pow(2, float64(comboOp)))
+		computer.B = numerator / (1 << comboOp)
 	case 7:
 		numerator := computer.A
 		comboOp := combo(operand, computer)
-		computer.C = numerator / int(math.Pow(2, float64(comboOp)))
+		computer.C = numerator / (1 << comboOp)
 	}
 
 	if !jumped {
