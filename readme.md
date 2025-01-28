@@ -61,4 +61,5 @@ The aoc package contains shared utilities used across different solutions, such 
 - Day 17
 - Day 18
 - Day 19
+- Day 20
 
