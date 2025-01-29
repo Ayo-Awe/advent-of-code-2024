@@ -42,15 +42,15 @@ Each solution prints both Part One and Part Two answers.
 The aoc package contains shared utilities used across different solutions, such as file reading and input parsing functions.
 
 ## Progress
-- Day 1
-- Day 2
-- Day 3
-- Day 4
-- Day 5
-- Day 6
-- Day 7
-- Day 8
-- Day 9
+- Day 01
+- Day 02
+- Day 03
+- Day 04
+- Day 05
+- Day 06
+- Day 07
+- Day 08
+- Day 09
 - Day 10
 - Day 11
 - Day 12
