@@ -1,0 +1,110 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"sort"
+	"strings"
+
+	"github.com/ayo-awe/advent-of-code-2024/aoc"
+)
+
+func main() {
+	input, err := aoc.ReadInputLineByLine("input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	network := buildNetwork(input)
+
+	fmt.Println("solution to part one: ", PartOne(network))
+	fmt.Println("solution to part two: ", PartTwo())
+}
+
+func PartOne(network map[string]map[string]struct{}) int {
+	matches := make(map[string]struct{})
+	for node, subnet := range network {
+		if !strings.HasPrefix(node, "t") {
+			continue
+		}
+
+		var subnodes []string
+		for subnode := range subnet {
+			subnodes = append(subnodes, subnode)
+		}
+
+		for i := 0; i < len(subnodes)-1; i++ {
+			for j := i + 1; j < len(subnodes); j++ {
+				subA, subB := subnodes[i], subnodes[j]
+				lookupKey := []string{node, subA, subB}
+				sort.Strings(lookupKey)
+
+				key := strings.Join(lookupKey, ",")
+
+				if _, exists := matches[key]; exists {
+					continue
+				}
+
+				if _, connected := network[subA][subB]; connected {
+					matches[key] = struct{}{}
+				}
+			}
+		}
+	}
+
+	return len(matches)
+}
+
+func PartTwo(network map[string]map[string]struct{}) string {
+	matches := make(map[string]struct{})
+	for node, subnet := range network {
+		if !strings.HasPrefix(node, "t") {
+			continue
+		}
+
+		var subnodes []string
+		for subnode := range subnet {
+			subnodes = append(subnodes, subnode)
+		}
+
+		for i := 0; i < len(subnodes)-1; i++ {
+			for j := i + 1; j < len(subnodes); j++ {
+				subA, subB := subnodes[i], subnodes[j]
+				lookupKey := []string{node, subA, subB}
+				sort.Strings(lookupKey)
+
+				key := strings.Join(lookupKey, ",")
+
+				if _, exists := matches[key]; exists {
+					continue
+				}
+
+				if _, connected := network[subA][subB]; connected {
+					matches[key] = struct{}{}
+				}
+			}
+		}
+	}
+
+	return 0
+}
+
+func buildNetwork(connections []string) map[string]map[string]struct{} {
+	network := make(map[string]map[string]struct{})
+	for _, connection := range connections {
+		nodes := strings.Split(connection, "-")
+		node1, node2 := nodes[0], nodes[1]
+
+		if _, ok := network[node1]; !ok {
+			network[node1] = make(map[string]struct{})
+		}
+
+		if _, ok := network[node2]; !ok {
+			network[node2] = make(map[string]struct{})
+		}
+
+		network[node1][node2] = struct{}{}
+		network[node2][node1] = struct{}{}
+	}
+	return network
+}

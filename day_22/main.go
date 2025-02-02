@@ -103,4 +103,3 @@ func nthSecret(secret, n int) []int {
 	}
 	return secrets
 }
-
